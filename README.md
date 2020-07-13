@@ -1,22 +1,27 @@
-# AWS-Config-Rules
+# AWS Config Rules Hands-on
+## Purpose
+Custom rules in AWS Config Rules are done by creating a Lambda. By actually experiencing the creation of custom rules, we will facilitate the development when creating Config Rules in the future.
 
-AWS Config Rules Hands-on
-The The target of
-Custom rules for AWS Config Rules are made by creating Lambda.  By actually experiencing custom rule creation, you will be more likely to develop future Config Rule.  
-Teaching materials
+## Textbook
+Use [awslabs aws-config-rules](https://github.com/awslabs/aws-config-rules).
+### Example
+In Lambda (Python), create the following rule.
+-Detection of security groups with inbound rules of 0.0.0.0/0
+-Detection of unused IAM users
 
-Use awslabs aws-config-rules.
-Cases
-In this section, you will create the following rules inLambda(Python):）Create the following rules in (
-•	Security group inspection with Out inbound rules of 0.0.0.0
-•	Checking Out for iam users that are not actually being used
-How it works
-As written in the documentation,AWSConfig Rules has two trigger types: In this example, both use Detect on Change. In the case of Detect on Change, the resource information is passed as an event to the lambda variable, unless the target resource is zero. You can also evaluate all resources by "reevaluation". In the case of "periodic execution", resource information is not passed, so it is necessary to extract the resource information itself in code.  
-AWS Config Set up
-By default, global resources such as IAM are not covered and are not evaluated when you create rules. In AWSConfig Settings, select the check box to include global resources (suchasAWS IAM resources).   
-Sos
-Source Entry
-Create a working directory and clone I will from GitHub.  
+### Mechanism
+As described in [Documents](https://docs.aws.amazon.com/ja_jp/config/latest/developerguide/evaluate-config-rules.html#aws-config-rules-trigger-types) AWS Config Rules has two trigger types.
+In this example, both use "Detect on change". In the case of "Detected on change", the resource information is passed as an event to the Lambda function unless the target resource is zero. You can also "re-evaluate" to evaluate all resources. In the case of "Periodic execution", resource information is not passed, so it is necessary to extract the resource information itself in the code.
+
+## AWS Config settings
+By default, global resources such as IAM are not targeted and are not evaluated even when a rule is created.
+In AWS Config Settings (https://ap-northeast-1.console.aws.amazon.com/config/home?region=ap-northeast-1#/configure), global resources (such as AWS IAM resources) Leave the Include check box selected.
+
+## Source
+### Getting the source
+Create a working directory and Clone from GitHub.
+
+```
 $ mkdir Config
 $ cd Config/
 $ git clone https://github.com/awslabs/aws-config-rules.git
@@ -27,15 +32,19 @@ remote: Total 575 (delta 2), reused 3 (delta 0), pack-reused 565
 Receiving objects: 100% (575/575), 157.63 KiB | 140.00 KiB/s, done.
 Resolving deltas: 100% (331/331), done.
 $ 
-Structure of the event to be passed
-An example of an event in an AWS Config rule is helpful. However, since not all event specifications are listed, it is recommended that you output configurationItem for each resource and check the contents.  
-We're dealing with EC2 and IAM users. Here is an example of an invitationEvent for these resources: Note that configurationItem itself does not exist for calls withScheduledEvent or if the called does not have a resource to evaluate.  
+```
+### Passed event structure
+Refer to [Example of AWS Config Rule Events](https://docs.aws.amazon.com/ja_jp/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for reference. However, not all event specifications are listed, so it is recommended to output a configurationItem for each resource and check the contents.
+
+This time we are dealing with EC2 and IAM users. Below are examples of invocationEvents for these resources. In addition, configurationItem itself does not exist when calling with ScheduledEvent or when there is no resource to be evaluated that was called.
+
 EC2
+```
 {
     "recordVersion": "1.3",
     "configurationItem": {
         "relationships": [],
-"configurationItemCaptureTime": "2018-07-04T01:54:02.810Z",
+        "configurationItemCaptureTime": "2018-07-04T01:54:02.810Z",
         "availabilityZone": null,
         "configurationStateMd5Hash": "",
         "tags": {},
@@ -44,7 +53,7 @@ EC2
         "configurationStateId": 1530669242810,
         "relatedEvents": [],
         "awsRegion": "ap-northeast-1",
-"ARN": "arn:aws:ec2:ap-northeast-1:xxxxxxxxxxxxxxxxxx:instance/i-05888074e384774ef,"
+        "ARN": "arn:aws:ec2:ap-northeast-1:xxxxxxxxxxxxxx:instance/i-05888074e384774ef",
         "supplementaryConfiguration": {},
         "resourceName": null,
         "configuration": null,
@@ -53,11 +62,14 @@ EC2
         "configurationItemStatus": "ResourceDeleted",
         "awsAccountId": "xxxxxxxxxxxxxxx"
     },
-"notificationCreationTime": "2018-07-05T14:40:13.752Z",
-"messageType": "ConfigurationItemChangeNotification",
+    "notificationCreationTime": "2018-07-05T14:40:13.752Z",
+    "messageType": "ConfigurationItemChangeNotification",
     "configurationItemDiff": null
 }
-IAM Users ー
+```
+
+IAM user
+```
 {
     "recordVersion": "1.3",
     "configurationItem": {
@@ -69,7 +81,7 @@ IAM Users ー
                 "resourceName": "trainexpenser-codecommit-readonly"
             }
         ],
-"configurationItemCaptureTime": "2018-07-05T15:22:21.203Z",
+        "configurationItemCaptureTime": "2018-07-05T15:22:21.203Z",
         "availabilityZone": "Not Applicable",
         "configurationStateMd5Hash": "",
         "tags": {},
@@ -84,7 +96,7 @@ IAM Users ー
         "configuration": {
             "userName": "trainexpenser-codecommit-readonly",
             "groupList": [],
-"createDate": "2017-12-01T05:01:21.000Z",
+            "createDate": "2017-12-01T05:01:21.000Z",
             "userId": "AIDAIKBNZFI2LJRYEOI3G",
             "userPolicyList": null,
             "path": "/",
@@ -97,16 +109,21 @@ IAM Users ー
             "arn": "arn:aws:iam::xxxxxxxxxxxxx:user/trainexpenser-codecommit-readonly"
         },
         "resourceId": "AIDAIKBNZFI2LJRYEOI3G",
-"resourceCreationTime": "2017-12-01T05:01:21.000Z",
+        "resourceCreationTime": "2017-12-01T05:01:21.000Z",
         "configurationItemStatus": "ResourceDiscovered",
         "awsAccountId": "xxxxxxxxxxxx"
     },
-"notificationCreationTime": "2018-07-05T15:22:49.724Z",
-"messageType": "ConfigurationItemChangeNotification",
+    "notificationCreationTime": "2018-07-05T15:22:49.724Z",
+    "messageType": "ConfigurationItemChangeNotification",
     "configurationItemDiff": null
 }
-Security group inspection, including inbound Out0.0.0/0
-This rule is already provided in the sample(ec2-exposed-instance.py). The following Sourcesources are described.  
+```
+
+
+Security group detected with inbound ### 0.0.0.0/0
+This rule is already provided in the sample ([ec2-exposed-instance.py](https://github.com/awslabs/aws-config-rules/blob/master/python/ec2-exposed-instance. py)). The source is explained below.
+
+```
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
@@ -122,17 +139,17 @@ This rule is already provided in the sample(ec2-exposed-instance.py). The follow
 import json
 import boto3
 
-# An array of resources to which the rule applies. Used in evaluate_compliance().  
+# An array of resources to which the rule applies. Used in evaluate_compliance().
 APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
 
-# Converts the hidden port number definition (forbidden ports) を to range.   1 If it is one, it is only that port. 
+# Convert a forbidden port definition that should be hidden into a range. If there is one, only that port.
 def expand_range(ports):
     if "-" in ports:
         return range(int(ports.split("-")[0]), int(ports.split("-")[1])+1)
     else:
         return [int(ports)]
 
-Locate and collect the IpRanges setting that contains # 0.0.0.0/0.  
+Find and collect the IpRanges setting that contains # 0.0.0.0/0.
 def find_exposed_ports(ip_permissions):
     exposed_ports = []
     for permission in ip_permissions:
@@ -142,8 +159,8 @@ def find_exposed_ports(ip_permissions):
                                                permission["ToPort"]+1))
     return exposed_ports
 
-# exporsed_ports returns arule violation ifforbidden_ports is included.  1 The discovery ends when the first one is found. 
-# exporsed_ports * forbidden_ports   is calculated. 
+Returns a rule violation if # exporsed_ports contains forbidden_ports. The search ends when the first one is found.
+It is the amount of calculation of # exporsed_ports * forbidden_ports.
 # forbidden_portsの例: {"examplePort1":"8080", "exampleRange1":"1-1024", "examplePort2":"2375"}
 def find_violation(ip_permissions, forbidden_ports):
     exposed_ports = find_exposed_ports(ip_permissions)
@@ -156,9 +173,9 @@ def find_violation(ip_permissions, forbidden_ports):
     return None
 
 
-# This is the main function of the evaluation. 
+#Main function of evaluation.
 def evaluate_compliance(configuration_item, rule_parameters):
-# Returns as NOT_APPLICABLE if it is not the target resource type. 
+    # If it is not the target resource type, it will be returned as NOT_APPLICABLE.
     if configuration_item["resourceType"] not in APPLICABLE_RESOURCES:
         return {
             "compliance_type": "NOT_APPLICABLE",
@@ -166,7 +183,7 @@ def evaluate_compliance(configuration_item, rule_parameters):
             configuration_item["resourceType"] + "."
         }
 
-# Returns as NOT_APPLICABLE if the resource has already been deleted.  
+    # If the resource has already been deleted, return it as NOT_APPLICABLE.
     if configuration_item['configurationItemStatus'] == "ResourceDeleted":
         return {
             "compliance_type": "NOT_APPLICABLE",
@@ -175,7 +192,7 @@ def evaluate_compliance(configuration_item, rule_parameters):
 
     security_groups = configuration_item["configuration"].get("securityGroups")
 
-# Returns as NON_COMPLIANT if the security group is not attached in the first place. 
+    # If a security group is not attached in the first place, it will be returned as NON_COMPLIANT.
     if security_groups is None:
         return {
             "compliance_type": "NON_COMPLIANT",
@@ -183,40 +200,40 @@ def evaluate_compliance(configuration_item, rule_parameters):
         }
 
     ec2 = boto3.resource("ec2")
-# Inspect all security groups. 
+    # Inspect all security groups.
     for security_group in security_groups:
-# Retrieves IP permissions. 
-        ip_permissions = ec2. SecurityGroup(
+        # Get IP permissions.
+        ip_permissions = ec2.SecurityGroup(
                                            security_group["groupId"]
                                           ).ip_permissions
-# Check for violations. 
+        # Inspect for violations.
         violation = find_violation(
             ip_permissions,
             rule_parameters
         )
 
-# If anything other than None is returned, it returns NON_COMPLIANT and its contents as violations. 
+        If anything other than # None is returned, NON_COMPLIANT and its contents will be returned as a violation.
         if violation:
             return {
                 "compliance_type": "NON_COMPLIANT",
                 "annotation": violation
             }
 
-# Returns APPLY because the check passed. 
+    # COMPLIANT is returned because the inspection passed.
     return {
         "compliance_type": "COMPLIANT",
         "annotation": "This resource is compliant with the rule."
     }
 
 
-# Lambda's main function. Called for each resource to be checked. 
-# Use the following three of the events: 
-# invokeevent/configurationItem: Resource settings
-# ruleParameters: Array of rule parameters  -> (key, value) Array ofin AWS Config Rules
-# resultToken: Token to use when putting the result into AWS  To Config Tokens to use when
+The main function of # Lambda. It is called for each resource to be inspected.
+Use the following three of # event.
+# invokingEvent/configurationItem: Resource settings
+# ruleParameters: Rule parameters in AWS Config Rules -> array of (key, value)
+# resultToken: Token to use when putting the result in AWS Config
 def lambda_handler(event, context):
 
-# Each data / parameter / token retrieve
+    #Retrieve each data/parameter/token
     invoking_event = json.loads(event["invokingEvent"])
     configuration_item = invoking_event["configurationItem"]
     rule_parameters = json.loads(event["ruleParameters"])
@@ -225,38 +242,42 @@ def lambda_handler(event, context):
     if "resultToken" in event:
         result_token = event["resultToken"]
 
-# Rating
+    #Evaluation
     evaluation = evaluate_compliance(configuration_item, rule_parameters)
 
-    # boto3UsingAWS Config the result toput
+    Put the results in AWS Config using # boto3
     config = boto3.client("config")
     config.put_evaluations(
         Evaluations=[
             {
-# Typically use input resource type/resource ResourceID Resource types in
+                # Normally use resource type/resource ID of input
                 "ComplianceResourceType":
                     configuration_item["resourceType"],
                 "ComplianceResourceId":
                     configuration_item["resourceId"],
                     
-# The following two are the results of the evaluation
+                # The following two are evaluation results
                 # COMPLIANT, NON_COMPLIANT, NOT_APPLICABLE
                 "ComplianceType":
                     evaluation["compliance_type"],
-# Result string
+                # Evaluation result string
                 "Annotation":
                     evaluation["annotation"],
                   
-# Time stamp used for sorting
-# You can use the time stamp at the time of capture
+                # Time stamp used for sorting
+                # Use the time stamp at the time of capture
                 "OrderingTimestamp":
                     configuration_item["configurationItemCaptureTime"]
             },
         ],
         ResultToken=result_token
     )
-Checking Outfor iam users that are not actually being used
-This rule is also provided in the sample(iam-inactive-user.py). The following Source sources are described. The parts that overlap with the previous section are omitted.  
+```
+
+### Detection of IAM users that are not actually used
+This rule is also already provided in the sample ([iam-inactive-user.py](https://github.com/awslabs/aws-config-rules/blob/master/python/iam-inactive-user. py)). The source is explained below. Parts that overlap with the previous section are omitted.
+
+```
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
@@ -276,7 +297,7 @@ import datetime
 
 APPLICABLE_RESOURCES = ["AWS::IAM::User"]
 
-# Calculates the number of days of the given date and the current difference
+#Calculate the number of days between the given date and the current difference
 def calculate_age(date):
     now = datetime.datetime.utcnow().date()
     then = date.date()
@@ -290,22 +311,22 @@ def evaluate_compliance(configuration_item, rule_parameters):
         return "NOT_APPLICABLE"
 
     config = boto3.client("config")
-# There may be changes from the event being given, so just in case, retrieve the username with the resource ID as the key from the latest information in AWS Config  Retrieve the user name with the resource ID as the key from the latest information on
+    #There may be changes from the given event, so just in case we retrieve the username with the resource ID as the key from the latest information in AWS Config
     resource_information = config.get_resource_config_history(
         resourceType=configuration_item["resourceType"],
         resourceId=configuration_item["resourceId"]
     )
     user_name = resource_information["configurationItems"][0]["resourceName"]
 
-# Use the IAM API to retrieve passwordLastUsed for the IAM user
+    # Retrieve PasswordLastUsed of the relevant IAM user using IAM API
     iam = boto3.client("iam")
     user = iam.get_user(UserName=user_name)
     last_used = user["User"].get("PasswordLastUsed")
     
-# Retrieves unused period thresholds from parameters
+    Extract unused period threshold from # parameter
     max_inactive_days = int(rule_parameters["maxInactiveDays"])
 
-# Returns as NON_COMPIANT if the unused period exceeds the threshold specified by  NON_COMPIANT  the parameter
+    # If the unused period exceeds the threshold given by the parameter, it will be returned as NON_COMPIANT
     if last_used is not None and calculate_age(last_used) > max_inactive_days:
         return "NON_COMPLIANT"
 
@@ -332,21 +353,26 @@ def lambda_handler(event, context):
                 "ComplianceType":
                     evaluate_compliance(configuration_item, rule_parameters),
                 "Annotation":
-                    "The user has never logged in.", # COMPIANTThe same is true forAnnotation It has become
+                    The same Annotation applies to "The user has never logged in.", # COMPIANT
                 "OrderingTimestamp":
                     configuration_item["configurationItemCaptureTime"]
             },
         ],
         ResultToken=result_token
     )
-The creation of lambda variables
-The Lambda function for AWS Config Rules consists of the following:  
-•	A row for lambda functions that have access to AWS Config Rules
-•	Source code package(zip)）
-Create roles for custom rules for AWS Config rules
-The first step is to create a role. You 1 can create a role and reuse it for multiple rules. This role is a service role for Lambda variables and requires permissions to CloudWatch Logs and access to AWSConfig for  logging. Create it as follows:  
-1.	Create the policy file required to create the service role for the Lamdda function. 
+```
+
+## Creating a Lambda function
+The Lambda function for AWS Config Rules consists of:
+-Roles for Lambda functions that can access AWS Config Rules
+-Source code package (zip)
+### Creating Roles for AWS Config Rules Custom Rules
+First, create a role. If you create one roll, you can reuse it with multiple rules. This role is a service role for Lambda functions and requires permissions to CloudWatch Logs for logging and access to AWS Config. Create it as follows:
+
+1. Create the policy file needed to create the service role for the Lamdda function.
+
 lambda-exec-role-policy.json
+```
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -360,10 +386,14 @@ lambda-exec-role-policy.json
      }
   ]
 }
-2.	Create a role with the create-role API. The role name is lambda-config-rules-role.  After creation, get the ARN.   You can always get it by running get-role.  
+```
+
+2. Create a role with the create-role API. The role name is lambda-config-rules-role. Get the ARN after creation. You can always get it by running get-role.
+
+```
 $ ls
 aws-config-rules		lambda-exec-role-policy.json
-* Directory wheregit clone was run
+* The directory where git clone was executed
 $ aws iam create-role --role-name lambda-config-rules-role --assume-role-policy-document file://lambda-exec-role-policy.json
 {
     "Role": {
@@ -381,16 +411,20 @@ $ aws iam create-role --role-name lambda-config-rules-role --assume-role-policy-
             ]
         }, 
         "RoleId": "AROAJSIB5RAT7Y2JOAEUA", 
-"CreateDate": "2018-07-05T12:38:22.114Z",
+        "CreateDate": "2018-07-05T12:38:22.114Z", 
         "RoleName": "lambda-config-rules-role", 
         "Path": "/", 
-"Arn": "arn:aws:iam:::xxxxxxxxxxxxxxxs:role/lambda-config-rules-role"
+        "Arn": "arn:aws:iam::xxxxxxxxxxxxxx:role/lambda-config-rules-role"
     }
 }
 
 $ aws iam get-role --role-name lambda-config-rules-role
-* Same results are returned aswhen create-role was made.
-3.	Add the required policies for the role. Using existing policies,cloudWatchLogsFullAccess and AWSConfigRulesExecutionRole. as now In the 
+*The same result as when creating-role is returned
+```
+
+3. Add the required policies to the role. The existing policy is used as CloudWatchLogsFullAccess and AWSConfigRulesExecutionRole.
+
+```
 $ aws iam attach-role-policy --role-name lambda-config-rules-role --policy-arn "arn:aws:iam::aws:policy/service-role/AWSConfigRulesExecutionRole"
 $ aws iam attach-role-policy --role-name lambda-config-rules-role --policy-arn "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 $ aws iam attach-role-policy --role-name lambda-config-rules-role --policy-arn "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
@@ -416,18 +450,27 @@ $ aws iam list-attached-role-policies --role-name lambda-config-rules-role
         }
     ]
 }
-Lambda function Yes
-Zip the source code and create a function with the role in the previous section.  
-1.	Create a Zip file. 
+```
+
+### Creating a Lambda function
+Zip the source code and create a function with the roles from the previous section.
+
+1. Create a Zip file.
+
+```
 $ zip -j ec2-exposed-instance.zip aws-config-rules/python/ec2-exposed-instance.py 
   adding: ec2-exposed-instance.py (deflated 68%)
 $ zip -j iam-inactive-user.zip aws-config-rules/python/iam-inactive-user.py
   adding: iam-inactive-user.py (deflated 61%) 
-2.	Create a lambda variable. Change the ARN of the role to the actual one.  
+```
+
+2. Create a Lambda function. Please change the ARN of the role to the actual one.
+
+```
 $ aws lambda create-function \
  --function-name awsconfig-ec2-exposed-instance \
  --runtime python2.7 \
---role arn:aws:iam:::xxxxxxxxxxxs:role/lambda-config-rules-role
+ --role arn:aws:iam::xxxxxxxxxx:role/lambda-config-rules-role \
  --handler ec2-exposed-instance.lambda_handler \
  --timeout 300 \
  --zip-file fileb://ec2-exposed-instance.zip
@@ -452,7 +495,7 @@ $ aws lambda create-function \
 $ aws lambda create-function \
  --function-name awsconfig-iam-inactive-user \
  --runtime python2.7 \
---role arn:aws:iam:::xxxxxxxxxxxs:role/lambda-config-rules-role
+ --role arn:aws:iam::xxxxxxxxxx:role/lambda-config-rules-role \
  --handler iam-inactive-user.lambda_handler \
  --timeout 300 \
  --zip-file fileb://iam-inactive-user.zip
@@ -474,13 +517,17 @@ $ aws lambda create-function \
     "Runtime": "python2.7", 
     "Description": ""
 }
-3.	Receive From lambda triggers from AWS Config and grant permission. Change the source-account to your account number.  
+```
+
+3. Grant permission to call the Lambda function from AWS Config. Please change your source-account to your account number.
+
+```
 $ aws lambda add-permission \
 > --function-name awsconfig-ec2-exposed-instance \
 > --statement-id 1 \
 > --principal config.amazonaws.com \
 > --action lambda:InvokeFunction \
---source-account xxxxxxxxxxxxxxxxxxx
+> --source-account xxxxxxxxxxxxxx
 {
     "Statement": "{\"Sid\":\"1\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:ap-northeast-1:xxxxxxxxxxxxx:function:awsconfig-ec2-exposed-instance\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"xxxxxxxxxxxxx\"}}}"
 } 
@@ -489,14 +536,18 @@ $ aws lambda add-permission \
 > --statement-id 1 \
 > --principal config.amazonaws.com \
 > --action lambda:InvokeFunction \
-> --source-account xxxxxxxxxx
+> --source-account xxxxxxxxxxxxx
 {
     "Statement": "{\"Sid\":\"1\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"config.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:ap-northeast-1:xxxxxxxxxxxxxxx:function:awsconfig-iam-inactive-user\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"xxxxxxxxxxxxx\"}}}"
 }
 $ 
-AWS Config Create a rule
-Create a json file for the rule definition and use it to create the rule.  SourceIdentifier.   Specify the ARN of the actual Lambda variable.  
-ec2-exposed-instance-rule.json
+```
+
+## Creating AWS Config Rules
+Create a json file for rule definition and use it to create a rule. For Source Identifier. Specify the actual Lambda function ARN.
+
+ec2-exposed-instance-rule.json 
+```
 {
 	"ConfigRuleName": "EC2-Exposed-Instance",
 	"Description": "Evaluates EC2 instances which expose port(s).",
@@ -515,7 +566,10 @@ ec2-exposed-instance-rule.json
 	},
 	"InputParameters": "{\"examplePort1\":\"8080\", \"exampleRange1\":\"1-1024\", \"examplePort2\":\"2375\"}"
 }
-iam-inactive-user-rule.json
+```
+
+iam-inactive-user-rule.json 
+```
 {
 	"ConfigRuleName": "IAM-Inactive-Users",
 	"Description": "Evaluates inactive IAM users.",
@@ -534,7 +588,11 @@ iam-inactive-user-rule.json
 	},
 	"InputParameters": "{\"maxInactiveDays\":\"90\"}"
 }
+```
+
+```
 $ aws configservice put-config-rule --config-rule file://ec2-exposed-instance-rule.json 
 $ aws configservice put-config-rule --config-rule file://iam-inactive-user-rule.json 
-At thisAWS Config point, you  can perform an assessment of all resources by pressing Reevaluation from the AWS Config console. 
+```
 
+Once you have done this, you can run an assessment of all resources by hitting "Reassess" from the AWS Config console.
